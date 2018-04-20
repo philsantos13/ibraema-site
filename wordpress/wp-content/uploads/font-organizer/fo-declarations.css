@@ -1,0 +1,23 @@
+/* This Awesome CSS file was created by Font Orgranizer from Hive :) */
+
+
+@font-face {
+    font-family: 'ConduitITCSTD';
+    
+    src: url('//localhost/wp-content/uploads/font-organizer/conduititcstd.otf') format('opentype');
+font-weight: normal;
+}
+
+@font-face {
+    font-family: 'ConduitITCSTD';
+    
+    src: url('//localhost/wp-content/uploads/font-organizer/conduititcstd-extralight.otf') format('opentype');
+font-weight: 300;
+}
+
+@font-face {
+    font-family: 'ConduitITCSTD';
+    
+    src: url('//localhost/wp-content/uploads/font-organizer/conduititcstd-bold.otf') format('opentype');
+font-weight: 700;
+}
