@@ -1,5 +1,5 @@
-/*! elementor - v2.0.3 - 29-03-2018 */
-(function(){function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s}return e})()({1:[function(require,module,exports){
+/*! elementor - v2.0.16 - 12-06-2018 */
+(function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c="function"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error("Cannot find module '"+i+"'");throw a.code="MODULE_NOT_FOUND",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u="function"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){
 var ElementsHandler;
 
 ElementsHandler = function( $ ) {
@@ -24,7 +24,6 @@ ElementsHandler = function( $ ) {
 
 	var addGlobalHandlers = function() {
 		elementorFrontend.hooks.addAction( 'frontend/element_ready/global', require( 'elementor-frontend/handlers/global' ) );
-		elementorFrontend.hooks.addAction( 'frontend/element_ready/widget', require( 'elementor-frontend/handlers/widget' ) );
 	};
 
 	var addElementsHandlers = function() {
@@ -96,7 +95,7 @@ ElementsHandler = function( $ ) {
 
 module.exports = ElementsHandler;
 
-},{"elementor-frontend/handlers/accordion":4,"elementor-frontend/handlers/alert":5,"elementor-frontend/handlers/counter":7,"elementor-frontend/handlers/global":8,"elementor-frontend/handlers/image-carousel":9,"elementor-frontend/handlers/progress":10,"elementor-frontend/handlers/section":11,"elementor-frontend/handlers/tabs":12,"elementor-frontend/handlers/text-editor":13,"elementor-frontend/handlers/toggle":14,"elementor-frontend/handlers/video":15,"elementor-frontend/handlers/widget":16}],2:[function(require,module,exports){
+},{"elementor-frontend/handlers/accordion":4,"elementor-frontend/handlers/alert":5,"elementor-frontend/handlers/counter":7,"elementor-frontend/handlers/global":8,"elementor-frontend/handlers/image-carousel":9,"elementor-frontend/handlers/progress":10,"elementor-frontend/handlers/section":11,"elementor-frontend/handlers/tabs":12,"elementor-frontend/handlers/text-editor":13,"elementor-frontend/handlers/toggle":14,"elementor-frontend/handlers/video":15}],2:[function(require,module,exports){
 /* global elementorFrontendConfig */
 ( function( $ ) {
 	var elements = {},
@@ -129,6 +128,8 @@ module.exports = ElementsHandler;
 			elements.$body = $( 'body' );
 
 			elements.$elementor = elements.$document.find( '.elementor' );
+
+			elements.$wpAdminBar = elements.$document.find( '#wpadminbar' );
 		};
 
 		var bindEvents = function() {
@@ -312,7 +313,7 @@ if ( ! elementorFrontend.isEditMode() ) {
 	jQuery( elementorFrontend.init );
 }
 
-},{"../utils/hooks":21,"./handler-module":3,"elementor-frontend/elements-handler":1,"elementor-frontend/modules/stretch-element":17,"elementor-frontend/utils/anchors":18,"elementor-frontend/utils/lightbox":19,"elementor-frontend/utils/youtube":20,"elementor-utils/hot-keys":22,"elementor-utils/masonry":23}],3:[function(require,module,exports){
+},{"../utils/hooks":20,"./handler-module":3,"elementor-frontend/elements-handler":1,"elementor-frontend/modules/stretch-element":16,"elementor-frontend/utils/anchors":17,"elementor-frontend/utils/lightbox":18,"elementor-frontend/utils/youtube":19,"elementor-utils/hot-keys":21,"elementor-utils/masonry":22}],3:[function(require,module,exports){
 var ViewModule = require( '../utils/view-module' ),
 	HandlerModule;
 
@@ -448,7 +449,7 @@ HandlerModule = ViewModule.extend( {
 
 module.exports = HandlerModule;
 
-},{"../utils/view-module":25}],4:[function(require,module,exports){
+},{"../utils/view-module":24}],4:[function(require,module,exports){
 var TabsModule = require( 'elementor-frontend/handlers/base-tabs' );
 
 module.exports = function( $scope ) {
@@ -796,7 +797,13 @@ var BackgroundVideo = HandlerModule.extend( {
 
 	prepareYTVideo: function( YT, videoID ) {
 		var self = this,
-			$backgroundVideoContainer = self.elements.$backgroundVideoContainer;
+			$backgroundVideoContainer = self.elements.$backgroundVideoContainer,
+			startStateCode = YT.PlayerState.PLAYING;
+
+		// Since version 67, Chrome doesn't fire the `PLAYING` state at start time
+		if ( window.chrome ) {
+			startStateCode = YT.PlayerState.UNSTARTED;
+		}
 
 		$backgroundVideoContainer.addClass( 'elementor-loading elementor-invisible' );
 
@@ -812,7 +819,7 @@ var BackgroundVideo = HandlerModule.extend( {
 				},
 				onStateChange: function( event ) {
 					switch ( event.data ) {
-						case YT.PlayerState.PLAYING:
+						case startStateCode:
 							$backgroundVideoContainer.removeClass( 'elementor-invisible elementor-loading' );
 
 							break;
@@ -885,25 +892,23 @@ var StretchedSection = HandlerModule.extend( {
 	stretchElement: null,
 
 	bindEvents: function() {
-		elementorFrontend.addListenerOnce( this.$element.data( 'model-cid' ), 'resize', this.stretchSection );
+		elementorFrontend.addListenerOnce( this.$element.data( 'model-cid' ), 'resize', this.stretch );
 	},
 
 	initStretch: function() {
 		this.stretchElement = new elementorFrontend.modules.StretchElement( { element: this.$element } );
 	},
 
-	stretchSection: function() {
+	stretch: function() {
 		var isStretched = this.$element.hasClass( 'elementor-section-stretched' );
 
-		if ( elementorFrontend.isEditMode() || isStretched ) {
-			this.stretchElement.reset();
+		if ( ! isStretched ) {
+			return;
 		}
 
-		if ( isStretched ) {
-			this.stretchElement.setSettings( 'selectors.container', elementorFrontend.getGeneralSettings( 'elementor_stretched_section_container' ) || window );
+		this.stretchElement.setSettings( 'selectors.container', elementorFrontend.getGeneralSettings( 'elementor_stretched_section_container' ) || window );
 
-			this.stretchElement.stretch();
-		}
+		this.stretchElement.stretch();
 	},
 
 	onInit: function() {
@@ -911,12 +916,18 @@ var StretchedSection = HandlerModule.extend( {
 
 		this.initStretch();
 
-		this.stretchSection();
+		var isStretched = this.$element.hasClass( 'elementor-section-stretched' );
+
+		if ( elementorFrontend.isEditMode() || isStretched ) {
+			this.stretchElement.reset();
+		}
+
+		this.stretch();
 	},
 
 	onGeneralSettingsChange: function( changed ) {
 		if ( 'elementor_stretched_section_container' in changed ) {
-			this.stretchSection();
+			this.stretch();
 		}
 	}
 } );
@@ -1011,7 +1022,7 @@ module.exports = function( $scope ) {
 	}
 
 	if ( elementorFrontend.isEditMode() ) {
-		new Shapes( { $element:  $scope } );
+		new Shapes( { $element: $scope } );
 	}
 
 	new BackgroundVideo( { $element: $scope } );
@@ -1228,21 +1239,6 @@ module.exports = function( $scope ) {
 };
 
 },{"elementor-frontend/handler-module":3}],16:[function(require,module,exports){
-module.exports = function( $scope, $ ) {
-	if ( ! elementorFrontend.isEditMode() ) {
-		return;
-	}
-
-	if ( $scope.hasClass( 'elementor-widget-edit-disabled' ) ) {
-		return;
-	}
-
-	$scope.find( '.elementor-element' ).each( function() {
-		elementorFrontend.elementsHandler.runReadyTrigger( $( this ) );
-	} );
-};
-
-},{}],17:[function(require,module,exports){
 var ViewModule = require( '../../utils/view-module' );
 
 module.exports = ViewModule.extend( {
@@ -1310,15 +1306,15 @@ module.exports = ViewModule.extend( {
 	reset: function() {
 		var css = {};
 
-		css.width = 'auto';
+		css.width = '';
 
-		css[ this.getSettings( 'direction' ) ] = 0;
+		css[ this.getSettings( 'direction' ) ] = '';
 
 		this.elements.$element.css( css );
 	}
 } );
 
-},{"../../utils/view-module":25}],18:[function(require,module,exports){
+},{"../../utils/view-module":24}],17:[function(require,module,exports){
 var ViewModule = require( '../../utils/view-module' );
 
 module.exports = ViewModule.extend( {
@@ -1329,8 +1325,7 @@ module.exports = ViewModule.extend( {
 			selectors: {
 				links: 'a[href*="#"]',
 				targets: '.elementor-element, .elementor-menu-anchor',
-				scrollable: 'html, body',
-				wpAdminBar: '#wpadminbar'
+				scrollable: 'html, body'
 			}
 		};
 	},
@@ -1340,8 +1335,7 @@ module.exports = ViewModule.extend( {
 			selectors = this.getSettings( 'selectors' );
 
 		return {
-			$scrollable: $( selectors.scrollable ),
-			$wpAdminBar: $( selectors.wpAdminBar )
+			$scrollable: $( selectors.scrollable )
 		};
 	},
 
@@ -1364,11 +1358,22 @@ module.exports = ViewModule.extend( {
 			return;
 		}
 
-		var hasAdminBar = ( 1 <= this.elements.$wpAdminBar.length ),
-			scrollTop = $anchor.offset().top;
+		var scrollTop = $anchor.offset().top,
+			$wpAdminBar = elementorFrontend.getElements( '$wpAdminBar' ),
+			$activeStickys = jQuery( '.elementor-sticky--active' ),
+			maxStickyHeight = 0;
 
-		if ( hasAdminBar ) {
-			scrollTop -= this.elements.$wpAdminBar.height();
+		if ( $wpAdminBar.length > 0 ) {
+			scrollTop -= $wpAdminBar.height();
+		}
+
+		// Offset height of tallest sticky
+		if ( $activeStickys.length > 0 ) {
+			 maxStickyHeight = Math.max.apply( null, $activeStickys.map( function() {
+				return jQuery( this ).height();
+			} ).get() );
+
+			scrollTop -= maxStickyHeight;
 		}
 
 		event.preventDefault();
@@ -1387,7 +1392,7 @@ module.exports = ViewModule.extend( {
 	}
 } );
 
-},{"../../utils/view-module":25}],19:[function(require,module,exports){
+},{"../../utils/view-module":24}],18:[function(require,module,exports){
 var ViewModule = require( '../../utils/view-module' ),
 	LightboxModule;
 
@@ -1840,7 +1845,7 @@ LightboxModule = ViewModule.extend( {
 
 module.exports = LightboxModule;
 
-},{"../../utils/view-module":25}],20:[function(require,module,exports){
+},{"../../utils/view-module":24}],19:[function(require,module,exports){
 var ViewModule = require( '../../utils/view-module' );
 
 module.exports = ViewModule.extend( {
@@ -1890,7 +1895,7 @@ module.exports = ViewModule.extend( {
 	}
 } );
 
-},{"../../utils/view-module":25}],21:[function(require,module,exports){
+},{"../../utils/view-module":24}],20:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2149,7 +2154,7 @@ var EventManager = function() {
 
 module.exports = EventManager;
 
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var HotKeys = function() {
 	var hotKeysHandlers = {};
 
@@ -2201,7 +2206,7 @@ var HotKeys = function() {
 
 module.exports = new HotKeys();
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 var ViewModule = require( './view-module' );
 
 module.exports = ViewModule.extend( {
@@ -2230,17 +2235,15 @@ module.exports = ViewModule.extend( {
 
 		distanceFromTop += parseInt( this.elements.$container.css( 'margin-top' ), 10 );
 
-		this.elements.$container.height( '' );
-
 		this.elements.$items.each( function( index ) {
 			var row = Math.floor( index / columnsCount ),
-				indexAtRow = index % columnsCount,
 				$item = jQuery( this ),
-				itemPosition = $item.position(),
 				itemHeight = $item[0].getBoundingClientRect().height + settings.verticalSpaceBetween;
 
 			if ( row ) {
-				var pullHeight = itemPosition.top - distanceFromTop - heights[ indexAtRow ];
+				var itemPosition = $item.position(),
+                    indexAtRow = index % columnsCount,
+                    pullHeight = itemPosition.top - distanceFromTop - heights[ indexAtRow ];
 
 				pullHeight -= parseInt( $item.css( 'margin-top' ), 10 );
 
@@ -2248,17 +2251,15 @@ module.exports = ViewModule.extend( {
 
 				$item.css( 'margin-top', pullHeight + 'px' );
 
-				heights[ indexAtRow ] += itemHeight;
+                heights[ indexAtRow ] += itemHeight;
 			} else {
 				heights.push( itemHeight );
 			}
 		} );
-
-		this.elements.$container.height( Math.max.apply( Math, heights ) );
 	}
 } );
 
-},{"./view-module":25}],24:[function(require,module,exports){
+},{"./view-module":24}],23:[function(require,module,exports){
 var Module = function() {
 	var $ = jQuery,
 		instanceParams = arguments,
@@ -2464,7 +2465,7 @@ Module.extend = function( properties ) {
 
 module.exports = Module;
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var Module = require( './module' ),
 	ViewModule;
 
@@ -2490,5 +2491,5 @@ ViewModule = Module.extend( {
 
 module.exports = ViewModule;
 
-},{"./module":24}]},{},[2])
+},{"./module":23}]},{},[2])
 //# sourceMappingURL=frontend.js.map

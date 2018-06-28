@@ -1,4 +1,4 @@
-/*! elementor - v2.0.3 - 29-03-2018 */
+/*! elementor - v2.0.16 - 12-06-2018 */
 .elementor-screen-only,
 .screen-reader-text,
 .screen-reader-text span,
@@ -49,7 +49,7 @@
     margin: auto;
     width: 375px; }
   .dialog-type-lightbox .dialog-message {
-    padding: 0 20px;
+    padding: 0 20px 20px;
     min-height: 50px; }
   .dialog-type-lightbox .dialog-widget-header, .dialog-type-lightbox .dialog-message {
     text-align: center; }
@@ -513,7 +513,8 @@ body.elementor-editor-inactive #elementor-editor {
     font-size: 32px;
     font-weight: 300;
     color: inherit;
-    margin: 50px 0 35px; }
+    margin: 50px 0 35px;
+    line-height: 1.2; }
   .elementor-blank_state p {
     font-size: 16px;
     font-weight: normal;
@@ -892,13 +893,11 @@ body.elementor-editor-inactive #elementor-editor {
   width: 35%;
   max-width: 300px;
   padding-right: 100px; }
-  #elementor-new-template__description__get-started {
+  #elementor-new-template__description__title {
     font-size: 30px;
     color: #556068; }
-  #elementor-new-template__description__elementor-builder {
-    font-size: 30px;
-    color: #556068;
-    font-weight: bold; }
+    #elementor-new-template__description__title span {
+      font-weight: bold; }
   #elementor-new-template__description__content {
     font-size: 14px;
     padding: 30px 0; }
@@ -963,9 +962,9 @@ body.elementor-editor-inactive #elementor-editor {
     #elementor-new-template__form .elementor-form-field select:focus {
       border-color: #a4afb7; }
   #elementor-new-template__form .elementor-form-field__select {
+    appearance: none;
     -webkit-appearance: none;
-       -moz-appearance: none;
-            appearance: none;
+    -moz-appearance: none;
     cursor: pointer; }
     #elementor-new-template__form .elementor-form-field__select__wrapper {
       position: relative; }

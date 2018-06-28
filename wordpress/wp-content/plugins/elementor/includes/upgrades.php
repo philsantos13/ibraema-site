@@ -6,7 +6,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Elementor upgrades class.
+ * Elementor upgrades.
  *
  * Elementor upgrades handler class is responsible for updating different
  * Elementor versions.
@@ -82,6 +82,7 @@ class Upgrades {
 			'0.11.0' => 'upgrade_v0110',
 			'2.0.0' => 'upgrade_v200',
 			'2.0.1' => 'upgrade_v201',
+			'2.0.10' => 'upgrade_v2010',
 		];
 
 		foreach ( $upgrades as $version => $function ) {
@@ -98,8 +99,8 @@ class Upgrades {
 	 *
 	 * Change the image widget link URL, setting is to `custom` link.
 	 *
+	 * @since 2.0.0
 	 * @static
-	 * @since 1.0.0
 	 * @access private
 	 */
 	private static function upgrade_v032() {
@@ -145,8 +146,8 @@ class Upgrades {
 	 *
 	 * Change the image widget, setting the image size to full image size.
 	 *
+	 * @since 2.0.0
 	 * @static
-	 * @since 1.0.0
 	 * @access private
 	 */
 	private static function upgrade_v092() {
@@ -198,8 +199,8 @@ class Upgrades {
 	 *
 	 * Change the button widget sizes, setting up new button sizes.
 	 *
+	 * @since 2.0.0
 	 * @static
-	 * @since 1.0.0
 	 * @access private
 	 */
 	private static function upgrade_v0110() {
@@ -264,7 +265,6 @@ class Upgrades {
 	private static function upgrade_v200() {
 		global $wpdb;
 
-		// Fix Button widget to new sizes options.
 		$posts = $wpdb->get_results(
 			'SELECT `ID`, `post_title`, `post_parent`
 					FROM `' . $wpdb->posts . '` p
@@ -291,20 +291,56 @@ class Upgrades {
 	 *
 	 * Fix post titles for old autosave drafts that saved with the format 'Auto Save...'.
 	 *
+	 * @since 2.0.2
 	 * @static
-	 * @since 2.0.1
 	 * @access private
 	 */
 	private static function upgrade_v201() {
 		global $wpdb;
 
-		// Fix Button widget to new sizes options.
 		$posts = $wpdb->get_results(
 			'SELECT `ID`, `post_title`, `post_parent`
 					FROM `' . $wpdb->posts . '` p
 					LEFT JOIN `' . $wpdb->postmeta . '` m ON p.ID = m.post_id
 					WHERE `post_status` = \'inherit\'
 					AND `post_title` REGEXP \'^Auto Save [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$\'
+					AND  m.`meta_key` = \'_elementor_data\';'
+		);
+
+		if ( empty( $posts ) ) {
+			return;
+		}
+
+		foreach ( $posts as $post ) {
+			$parent = get_post( $post->post_parent );
+			$title = isset( $parent->post_title ) ? $parent->post_title : '';
+
+			wp_update_post( [
+				'ID' => $post->ID,
+				'post_title' => $title,
+			] );
+		}
+	}
+
+	/**
+	 * Upgrade Elementor 2.0.10
+	 *
+	 * Fix post titles for old autosave drafts that saved with the format 'Auto Save...'.
+	 * Fix also Translated titles.
+	 *
+	 * @since 2.0.10
+	 * @static
+	 * @access private
+	 */
+	private static function upgrade_v2010() {
+		global $wpdb;
+
+		$posts = $wpdb->get_results(
+			'SELECT `ID`, `post_title`, `post_parent`
+					FROM `' . $wpdb->posts . '` p
+					LEFT JOIN `' . $wpdb->postmeta . '` m ON p.ID = m.post_id
+					WHERE `post_status` = \'inherit\'
+					AND `post_title` REGEXP \'[[:alnum:]]+ [[:alnum:]]+ [0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}$\'
 					AND  m.`meta_key` = \'_elementor_data\';'
 		);
 
